@@ -1,5 +1,13 @@
 ![fog](http://geemus.s3.amazonaws.com/fog.png)
 
+# DON'T USE THIS GEM OR JUDGE ITS CREATORS
+
+Starting in commit [c2915919739b768ab61c54d64f1e8113c195b419](https://github.com/eastmedia/victorias_secret/commit/c2915919739b768ab61c54d64f1e8113c195b419)
+We brute-forced some pretty gross code here to allow rackspace storage to be used by Rackspace "SubUsers" - because
+they have usernames/passwords and fog at this point only supports adminusername/apikey to authenticate for Rackspace Storage.
+Sometimes a project's requirements deal you a handful of Deuces and you must flush them.
+
+
 fog is the Ruby cloud services library, top to bottom:
 
 * Collections provide a simplified interface, making clouds easier to work with and switch between.
@@ -14,7 +22,7 @@ fog is the Ruby cloud services library, top to bottom:
 
     sudo gem install fog
 
-Now type `fog` to try stuff, confident that fog will let you know what to do. 
+Now type `fog` to try stuff, confident that fog will let you know what to do.
 Here is an example of wading through server creation for Amazon Elastic Compute Cloud:
 
     >> server = Compute[:aws].servers.create
@@ -29,7 +37,7 @@ Here is an example of wading through server creation for Amazon Elastic Compute 
 ## Collections
 
 A high level interface to each cloud is provided through collections, such as `images` and `servers`.
-You can see a list of available collections by calling `collections` on the connection object. 
+You can see a list of available collections by calling `collections` on the connection object.
 You can try it out using the `fog` command:
 
     >> Compute[:aws].collections
@@ -99,7 +107,7 @@ It will return an [excon](http://github.com/geemus/excon) response, which has `b
 
 ## Go forth and conquer
 
-Play around and use the console to explore or check out [fog.io](http://fog.io) for more details and examples. 
+Play around and use the console to explore or check out [fog.io](http://fog.io) for more details and examples.
 Once you are ready to start scripting fog, here is a quick hint on how to make connections without the command line thing to help you.
 
     # create a compute connection
