@@ -2,7 +2,7 @@
 
 # DON'T USE THIS GEM OR JUDGE ITS CREATORS
 
-Starting in commit [c2915919739b768ab61c54d64f1e8113c195b419](https://github.com/eastmedia/victorias_secret/commit/c2915919739b768ab61c54d64f1e8113c195b419)
+Starting in commit [c2915919739b768ab61c54d64f1e8113c195b419](https://github.com/eastmedia/fog/commit/c2915919739b768ab61c54d64f1e8113c195b419)
 We brute-forced some pretty gross code here to allow rackspace storage to be used by Rackspace "SubUsers" - because
 they have usernames/passwords and fog at this point only supports adminusername/apikey to authenticate for Rackspace Storage.
 Sometimes a project's requirements deal you a handful of Deuces and you must flush them.
