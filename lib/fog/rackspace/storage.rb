@@ -5,8 +5,8 @@ module Fog
   module Storage
     class Rackspace < Fog::Service
 
-      requires :rackspace_api_key, :rackspace_username
-      recognizes :rackspace_auth_url, :rackspace_servicenet, :rackspace_cdn_ssl, :persistent
+      requires   :rackspace_username
+      recognizes :rackspace_api_key, :rackspace_password, :rackspace_auth_url, :rackspace_servicenet, :rackspace_cdn_ssl, :persistent
       recognizes :rackspace_temp_url_key
 
       model_path 'fog/rackspace/models/storage'
@@ -36,7 +36,7 @@ module Fog
         def cdn
           @cdn ||= Fog::CDN.new(
             :provider           => 'Rackspace',
-            :rackspace_api_key  => @rackspace_api_key,
+            :rackspace_password  => @rackspace_password,
             :rackspace_auth_url => @rackspace_auth_url,
             :rackspace_username => @rackspace_username
           )
@@ -88,6 +88,7 @@ module Fog
           @rackspace_auth_url = options[:rackspace_auth_url]
           @rackspace_servicenet = options[:rackspace_servicenet]
           @rackspace_auth_token = options[:rackspace_auth_token]
+          @rackspace_password   = options[:rackspace_password]
           @rackspace_storage_url = options[:rackspace_storage_url]
           @rackspace_temp_url_key = options[:rackspace_temp_url_key]
           @rackspace_must_reauthenticate = false
@@ -139,7 +140,7 @@ module Fog
         def authenticate
           if @rackspace_must_reauthenticate || @rackspace_auth_token.nil?
             options = {
-              :rackspace_api_key  => @rackspace_api_key,
+              :rackspace_password  => @rackspace_password,
               :rackspace_username => @rackspace_username,
               :rackspace_auth_url => @rackspace_auth_url
             }

@@ -16,18 +16,18 @@ module Fog
           data = nil
           message = nil
           status_code = nil
-          
+
           if error.response
-            status_code = error.response.status            
+            status_code = error.response.status
             unless error.response.body.empty?
               data = Fog::JSON.decode(error.response.body)
               message = data.values.first ? data.values.first['message'] : data['message']
             end
           end
-          
+
           new_error = super(error, message)
           new_error.instance_variable_set(:@response_data, data)
-          new_error.instance_variable_set(:@status_code, status_code)          
+          new_error.instance_variable_set(:@status_code, status_code)
           new_error
         end
       end
@@ -62,26 +62,31 @@ module Fog
     service(:databases,        'rackspace/databases',         'Databases')
 
     def self.authenticate(options, connection_options = {})
-      rackspace_auth_url = options[:rackspace_auth_url] || "auth.api.rackspacecloud.com"
-      url = rackspace_auth_url.match(/^https?:/) ? \
-                rackspace_auth_url : 'https://' + rackspace_auth_url
+      rackspace_auth_url = options[:rackspace_auth_url] || "identity.api.rackspacecloud.com"
+
+      url = rackspace_auth_url.match(/^https?:/) ? rackspace_auth_url : 'https://' + rackspace_auth_url
       uri = URI.parse(url)
+
       connection = Fog::Connection.new(url, false, connection_options)
-      @rackspace_api_key  = options[:rackspace_api_key]
+      @rackspace_password  = options[:rackspace_password]
       @rackspace_username = options[:rackspace_username]
+
       response = connection.request({
         :expects  => [200, 204],
+        :body     => "{\"auth\":{\"passwordCredentials\":{\"username\":\"#{@rackspace_username}\",\"password\":\"#{@rackspace_password}\"}}}",
         :headers  => {
-          'X-Auth-Key'  => @rackspace_api_key,
-          'X-Auth-User' => @rackspace_username
+          'Content-type'  => "application/json"
         },
         :host     => uri.host,
         :method   => 'GET',
-        :path     =>  (uri.path and not uri.path.empty?) ? uri.path : 'v1.0'
+        :path     =>  (uri.path and not uri.path.empty?) ? uri.path : 'v2.0/tokens'
       })
-      response.headers.reject do |key, value|
-        !['X-Server-Management-Url', 'X-Storage-Url', 'X-CDN-Management-Url', 'X-Auth-Token'].include?(key)
-      end
+
+      json_response = JSON.decode(response.body)["access"]
+      endpoints     = json_response["serviceCatalog"].detect { |x| x["name"] == "cloudFiles"}["endpoints"]
+      storage_url   = endpoints.detect { |endpoint| endpoint["region"] == "ORD" }["publicURL"]
+
+      {"X-Auth-Token" => json_response["token"]["id"], "X-Storage-Url" => storage_url}
     end
 
     # CGI.escape, but without special treatment on spaces
