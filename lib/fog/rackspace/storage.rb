@@ -36,7 +36,8 @@ module Fog
         def cdn
           @cdn ||= Fog::CDN.new(
             :provider           => 'Rackspace',
-            :rackspace_password  => @rackspace_password,
+            :rackspace_api_key  => @rackspace_api_key,
+            :rackspace_password => @rackspace_password,
             :rackspace_auth_url => @rackspace_auth_url,
             :rackspace_username => @rackspace_username
           )
@@ -140,8 +141,9 @@ module Fog
         def authenticate
           if @rackspace_must_reauthenticate || @rackspace_auth_token.nil?
             options = {
-              :rackspace_password  => @rackspace_password,
+              :rackspace_password => @rackspace_password,
               :rackspace_username => @rackspace_username,
+              :rackspace_api_key  => @rackspace_api_key,
               :rackspace_auth_url => @rackspace_auth_url
             }
             credentials = Fog::Rackspace.authenticate(options, @connection_options)

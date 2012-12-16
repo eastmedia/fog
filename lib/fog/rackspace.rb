@@ -62,31 +62,56 @@ module Fog
     service(:databases,        'rackspace/databases',         'Databases')
 
     def self.authenticate(options, connection_options = {})
-      rackspace_auth_url = options[:rackspace_auth_url] || "identity.api.rackspacecloud.com"
-
-      url = rackspace_auth_url.match(/^https?:/) ? rackspace_auth_url : 'https://' + rackspace_auth_url
-      uri = URI.parse(url)
-
-      connection = Fog::Connection.new(url, false, connection_options)
-      @rackspace_password  = options[:rackspace_password]
-      @rackspace_username = options[:rackspace_username]
-
-      response = connection.request({
-        :expects  => [200, 204],
-        :body     => "{\"auth\":{\"passwordCredentials\":{\"username\":\"#{@rackspace_username}\",\"password\":\"#{@rackspace_password}\"}}}",
-        :headers  => {
-          'Content-type'  => "application/json"
-        },
-        :host     => uri.host,
-        :method   => 'GET',
-        :path     =>  (uri.path and not uri.path.empty?) ? uri.path : 'v2.0/tokens'
-      })
-
-      json_response = JSON.decode(response.body)["access"]
-      endpoints     = json_response["serviceCatalog"].detect { |x| x["name"] == "cloudFiles"}["endpoints"]
-      storage_url   = endpoints.detect { |endpoint| endpoint["region"] == "ORD" }["publicURL"]
-
-      {"X-Auth-Token" => json_response["token"]["id"], "X-Storage-Url" => storage_url}
+      auth_api_version = options[:rackspace_password] ? 2 : 1
+      
+      if auth_api_version == 2
+        rackspace_auth_url = options[:rackspace_auth_url] || "identity.api.rackspacecloud.com"
+  
+        url = rackspace_auth_url.match(/^https?:/) ? rackspace_auth_url : 'https://' + rackspace_auth_url
+        uri = URI.parse(url)
+  
+        connection = Fog::Connection.new(url, false, connection_options)
+        @rackspace_password  = options[:rackspace_password]
+        @rackspace_username = options[:rackspace_username]
+  
+        response = connection.request({
+          :expects  => [200, 204],
+          :body     => "{\"auth\":{\"passwordCredentials\":{\"username\":\"#{@rackspace_username}\",\"password\":\"#{@rackspace_password}\"}}}",
+          :headers  => {
+            'Content-type'  => "application/json"
+          },
+          :host     => uri.host,
+          :method   => 'GET',
+          :path     =>  (uri.path and not uri.path.empty?) ? uri.path : 'v2.0/tokens'
+        })
+  
+        json_response = JSON.decode(response.body)["access"]
+        endpoints     = json_response["serviceCatalog"].detect { |x| x["name"] == "cloudFiles"}["endpoints"]
+        storage_url   = endpoints.detect { |endpoint| endpoint["region"] == "ORD" }["publicURL"]
+  
+        return {"X-Auth-Token" => json_response["token"]["id"], "X-Storage-Url" => storage_url}
+      else                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                # 
+        rackspace_auth_url = options[:rackspace_auth_url] || "auth.api.rackspacecloud.com"
+        url = rackspace_auth_url.match(/^https?:/) ? \
+                  rackspace_auth_url : 'https://' + rackspace_auth_url
+        uri = URI.parse(url)
+        connection = Fog::Connection.new(url, false, connection_options)
+        @rackspace_api_key  = options[:rackspace_api_key]
+        @rackspace_username = options[:rackspace_username]
+        response = connection.request({
+          :expects  => [200, 204],
+          :headers  => {
+            'X-Auth-Key'  => @rackspace_api_key,
+            'X-Auth-User' => @rackspace_username
+          },
+          :host     => uri.host,
+          :method   => 'GET',
+          :path     =>  (uri.path and not uri.path.empty?) ? uri.path : 'v1.0'
+        })
+        response.headers.reject do |key, value|
+          !['X-Server-Management-Url', 'X-Storage-Url', 'X-CDN-Management-Url', 'X-Auth-Token'].include?(key)
+        end                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                # 
+      end
     end
 
     # CGI.escape, but without special treatment on spaces
